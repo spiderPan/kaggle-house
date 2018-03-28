@@ -17,6 +17,7 @@ class tf_basic_model:
     def preprocess_features(housing_data_frame):
         selected_features = housing_data_frame[
             [
+                'Id',
                 'MSSubClass', 'MSZoning', 'LotFrontage', 'LotArea', 'Street', 'LotShape', 'LandContour', 'Utilities', 'LotConfig',
                 'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType',
                 'HouseStyle', 'OverallQual', 'OverallCond', 'YearBuilt', 'YearRemodAdd',
@@ -174,7 +175,7 @@ class tf_basic_model:
         return features, labels
 
     def train_model(learning_rate, steps, batch_size, feature_columns, training_examples, training_targets, validation_examples, validation_targets):
-        periods = 500
+        periods = 1
         steps_per_period = steps / periods
 
         my_optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
@@ -209,18 +210,20 @@ class tf_basic_model:
         return linear_regressor
 
     def get_input_fn(data_set, num_epochs=None, shuffle=True):
-        return tf.estimator.inputs.pandas_input_fn(
-            x=pd.DataFrame({k: data_set[k].values for k in data_set.columns()}),
+        return tf.estimator.inputs.pandas_input_fn(x=pd.DataFrame({k: data_set[k].values for k in data_set.columns}),
             y=None,
             num_epochs=num_epochs,
             shuffle=shuffle)
 
     def submit_prediction(model, testing_examples):
         submission = pd.DataFrame()
-        predictions = model.predict(input_fn=tf_basic_model.get_input_fn(testing_examples, num_epochs=1, shuffle=False))
-        predictions = list(p["predictions"])
-        print("Predictions: {}".format(str(predictions)))
-        #final_predictions = np.exp(predictions)
-        #submission[SalePrice] = final_predictions
+        submission['Id'] = testing_examples['Id']
+        predictions = model.predict(input_fn=tf_basic_model.get_input_fn(testing_examples))
+        predictions = np.array([item['predictions'][0] for item in predictions])
+        display.display(predictions)
+        # predictions = list(predictions["predictions"])
+        # print("Predictions: {}".format(str(predictions)))
+        # final_predictions = np.exp(predictions)
+        # submission['SalePrice'] = final_predictions
         # submission.head()
-        # submission.to_csv(./data/submission.csv, index=False)
+        # submission.to_csv('./data/submission.csv', index=False)

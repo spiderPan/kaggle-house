@@ -23,7 +23,7 @@ validation_dataframe = housing_data_frame.tail(200)
 training_examples = tf_basic_model.preprocess_features(training_dataframe)
 # display.display(training_examples.dtypes)
 # # display.display(training_examples)
-# sys.exit(0)
+
 training_targets = tf_basic_model.preprocess_targets(training_dataframe)
 validation_examples = tf_basic_model.preprocess_features(validation_dataframe)
 validation_targets = tf_basic_model.preprocess_targets(validation_dataframe)
