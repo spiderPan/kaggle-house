@@ -43,7 +43,11 @@ class tf_basic_model:
 
     def preprocess_targets(housing_data_frame):
         output_targets = pd.DataFrame()
-        output_targets['SalePrice'] = housing_data_frame['SalePrice'] / 1000.0
+        house_sale_price = housing_data_frame.get('SalePrice',0)
+        if house_sale_price is 0:
+            return pd.DataFrame(0, index=np.arange(len(housing_data_frame)), columns=['SalePrice'])
+
+        output_targets['SalePrice'] = house_sale_price
         return output_targets
 
     def construct_feature_columns(input_features):
@@ -175,7 +179,7 @@ class tf_basic_model:
         return features, labels
 
     def train_model(learning_rate, steps, batch_size, feature_columns, training_examples, training_targets, validation_examples, validation_targets):
-        periods = 1
+        periods = 20
         steps_per_period = steps / periods
 
         my_optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
@@ -210,20 +214,14 @@ class tf_basic_model:
         return linear_regressor
 
     def get_input_fn(data_set, num_epochs=None, shuffle=True):
-        return tf.estimator.inputs.pandas_input_fn(x=pd.DataFrame({k: data_set[k].values for k in data_set.columns}),
-            y=None,
-            num_epochs=num_epochs,
-            shuffle=shuffle)
+        return tf.estimator.inputs.pandas_input_fn(x=pd.DataFrame({k: data_set[k].values for k in data_set.columns}), y=None,num_epochs=num_epochs,shuffle=shuffle)
 
-    def submit_prediction(model, testing_examples):
+    def submit_prediction(model, testing_examples, testing_targets):
+        def predict_testing_input_fn(): return tf_basic_model.my_input_fn(testing_examples, testing_targets['SalePrice'], num_epochs=1, shuffle=False)
         submission = pd.DataFrame()
         submission['Id'] = testing_examples['Id']
-        predictions = model.predict(input_fn=tf_basic_model.get_input_fn(testing_examples))
+        predictions = model.predict(input_fn=predict_testing_input_fn)
         predictions = np.array([item['predictions'][0] for item in predictions])
-        display.display(predictions)
-        # predictions = list(predictions["predictions"])
-        # print("Predictions: {}".format(str(predictions)))
-        # final_predictions = np.exp(predictions)
-        # submission['SalePrice'] = final_predictions
-        # submission.head()
-        # submission.to_csv('./data/submission.csv', index=False)
+        submission['SalePrice'] = predictions
+        submission.head()
+        submission.to_csv('./data/submission.csv', index=False)

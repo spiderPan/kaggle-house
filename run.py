@@ -21,18 +21,13 @@ validation_dataframe = housing_data_frame.tail(200)
 
 
 training_examples = tf_basic_model.preprocess_features(training_dataframe)
-# display.display(training_examples.dtypes)
-# # display.display(training_examples)
-
 training_targets = tf_basic_model.preprocess_targets(training_dataframe)
+
 validation_examples = tf_basic_model.preprocess_features(validation_dataframe)
 validation_targets = tf_basic_model.preprocess_targets(validation_dataframe)
-testing_examples = tf_basic_model.preprocess_features(testing_housing_data_frame)
 
-# print('Training examples summary:')
-# display.display(training_examples.describe())
-# print('Validation examples summary:')
-# display.display(validation_examples.describe())
+testing_examples = tf_basic_model.preprocess_features(testing_housing_data_frame)
+testing_targets = tf_basic_model.preprocess_targets(testing_housing_data_frame)
 
 linear_regressor = tf_basic_model.train_model(learning_rate=0.003,
                                               steps=500,
@@ -43,4 +38,4 @@ linear_regressor = tf_basic_model.train_model(learning_rate=0.003,
                                               validation_examples=validation_examples,
                                               validation_targets=validation_targets)
 
-prediction = tf_basic_model.submit_prediction(linear_regressor, testing_examples)
+prediction = tf_basic_model.submit_prediction(linear_regressor, testing_examples,testing_targets)
