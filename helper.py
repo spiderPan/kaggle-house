@@ -43,7 +43,7 @@ class tf_basic_model:
 
     def preprocess_targets(housing_data_frame):
         output_targets = pd.DataFrame()
-        house_sale_price = housing_data_frame.get('SalePrice',0)
+        house_sale_price = housing_data_frame.get('SalePrice', 0)
         if house_sale_price is 0:
             return pd.DataFrame(0, index=np.arange(len(housing_data_frame)), columns=['SalePrice'])
 
@@ -182,7 +182,7 @@ class tf_basic_model:
         periods = 100
         steps_per_period = steps / periods
 
-        my_optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+        my_optimizer = tf.train.FtrlOptimizer(learning_rate=learning_rate, l2_regularization_strength=0.3)
         my_optimizer = tf.contrib.estimator.clip_gradients_by_norm(my_optimizer, 5.0)
         linear_regressor = tf.estimator.LinearRegressor(feature_columns=feature_columns, optimizer=my_optimizer)
 
@@ -214,7 +214,7 @@ class tf_basic_model:
         return linear_regressor
 
     def get_input_fn(data_set, num_epochs=None, shuffle=True):
-        return tf.estimator.inputs.pandas_input_fn(x=pd.DataFrame({k: data_set[k].values for k in data_set.columns}), y=None,num_epochs=num_epochs,shuffle=shuffle)
+        return tf.estimator.inputs.pandas_input_fn(x=pd.DataFrame({k: data_set[k].values for k in data_set.columns}), y=None, num_epochs=num_epochs, shuffle=shuffle)
 
     def submit_prediction(model, testing_examples, testing_targets):
         def predict_testing_input_fn(): return tf_basic_model.my_input_fn(testing_examples, testing_targets['SalePrice'], num_epochs=1, shuffle=False)
