@@ -179,7 +179,7 @@ class tf_basic_model:
         return features, labels
 
     def train_model(learning_rate, steps, batch_size, feature_columns, training_examples, training_targets, validation_examples, validation_targets):
-        periods = 20
+        periods = 100
         steps_per_period = steps / periods
 
         my_optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
