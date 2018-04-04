@@ -43,7 +43,7 @@ class tf_basic_model:
 
     def preprocess_targets(housing_data_frame):
         output_targets = pd.DataFrame()
-        house_sale_price = housing_data_frame.get('SalePrice',0)
+        house_sale_price = housing_data_frame.get('SalePrice', 0)
         if house_sale_price is 0:
             return pd.DataFrame(0, index=np.arange(len(housing_data_frame)), columns=['SalePrice'])
 
@@ -99,7 +99,7 @@ class tf_basic_model:
         Street = tf.feature_column.categorical_column_with_hash_bucket('Street', hash_bucket_size=1000)
         LotShape = tf.feature_column.categorical_column_with_hash_bucket('LotShape', hash_bucket_size=1000)
         LandContour = tf.feature_column.categorical_column_with_hash_bucket('LandContour', hash_bucket_size=1000)
-        Utilities = tf.feature_column.categorical_column_with_hash_bucket('Utilities', hash_bucket_size=1000)
+        Utilities = tf.feature_column.categorical_column_with_vocabulary_list(key='Utilities', vocabulary_list=('AllPub', 'NoSeWa'))
 
         LotConfig = tf.feature_column.categorical_column_with_hash_bucket('LotConfig', hash_bucket_size=1000)
         LandSlope = tf.feature_column.categorical_column_with_hash_bucket('LandSlope', hash_bucket_size=1000)
@@ -117,27 +117,27 @@ class tf_basic_model:
         MasVnrType = tf.feature_column.categorical_column_with_hash_bucket('MasVnrType', hash_bucket_size=1000)
         ExterQual = tf.feature_column.categorical_column_with_hash_bucket('ExterQual', hash_bucket_size=1000)
         ExterCond = tf.feature_column.categorical_column_with_hash_bucket('ExterCond', hash_bucket_size=1000)
-        Foundation = tf.feature_column.categorical_column_with_hash_bucket('Foundation', hash_bucket_size=1000)
+        Foundation = tf.feature_column.categorical_column_with_vocabulary_list(key='Foundation', vocabulary_list=('CBlock', 'PConc', 'BrkTil', 'Slab', 'Wood', 'Stone'))
 
         BsmtQual = tf.feature_column.categorical_column_with_hash_bucket('BsmtQual', hash_bucket_size=1000)
         BsmtCond = tf.feature_column.categorical_column_with_hash_bucket('BsmtCond', hash_bucket_size=1000)
         BsmtExposure = tf.feature_column.categorical_column_with_hash_bucket('BsmtExposure', hash_bucket_size=1000)
-        BsmtFinType1 = tf.feature_column.categorical_column_with_hash_bucket('BsmtFinType1', hash_bucket_size=1000)
-        BsmtFinType2 = tf.feature_column.categorical_column_with_hash_bucket('BsmtFinType2', hash_bucket_size=1000)
+        BsmtFinType1 = tf.feature_column.categorical_column_with_vocabulary_list(key='BsmtFinType1', vocabulary_list=('Unf', 'ALQ', 'Rec', 'GLQ', 'BLQ', 'LwQ'))
+        BsmtFinType2 = tf.feature_column.categorical_column_with_vocabulary_list(key='BsmtFinType2', vocabulary_list=('Unf', 'ALQ', 'Rec', 'GLQ', 'BLQ', 'LwQ'))
 
         Heating = tf.feature_column.categorical_column_with_hash_bucket('Heating', hash_bucket_size=1000)
         HeatingQC = tf.feature_column.categorical_column_with_hash_bucket('HeatingQC', hash_bucket_size=1000)
         CentralAir = tf.feature_column.categorical_column_with_hash_bucket('CentralAir', hash_bucket_size=1000)
         Electrical = tf.feature_column.categorical_column_with_hash_bucket('Electrical', hash_bucket_size=1000)
-        KitchenQual = tf.feature_column.categorical_column_with_hash_bucket('KitchenQual', hash_bucket_size=1000)
+        KitchenQual = tf.feature_column.categorical_column_with_vocabulary_list(key='KitchenQual', vocabulary_list=('Gd', 'Ex', 'TA', 'Fa'))
 
         Functional = tf.feature_column.categorical_column_with_hash_bucket('Functional', hash_bucket_size=1000)
         FireplaceQu = tf.feature_column.categorical_column_with_hash_bucket('FireplaceQu', hash_bucket_size=1000)
         GarageType = tf.feature_column.categorical_column_with_hash_bucket('GarageType', hash_bucket_size=1000)
-        GarageFinish = tf.feature_column.categorical_column_with_hash_bucket('GarageFinish', hash_bucket_size=1000)
+        GarageFinish = tf.feature_column.categorical_column_with_vocabulary_list(key='GarageFinish', vocabulary_list=('RFn', 'Unf', 'Fin'))
         GarageQual = tf.feature_column.categorical_column_with_hash_bucket('GarageQual', hash_bucket_size=1000)
 
-        GarageCond = tf.feature_column.categorical_column_with_hash_bucket('GarageCond', hash_bucket_size=1000)
+        GarageCond = tf.feature_column.categorical_column_with_vocabulary_list(key='GarageCond', vocabulary_list=("Ta", "Fa", "Po", "Gd", "Ex"))
         PavedDrive = tf.feature_column.categorical_column_with_hash_bucket('PavedDrive', hash_bucket_size=1000)
         SaleType = tf.feature_column.categorical_column_with_hash_bucket('SaleType', hash_bucket_size=1000)
         SaleCondition = tf.feature_column.categorical_column_with_hash_bucket('SaleCondition', hash_bucket_size=1000)
@@ -163,7 +163,8 @@ class tf_basic_model:
             EnclosedPorch, SsnPorch, ScreenPorch, PoolArea, MiscVal, MoSold, YrSold, SaleType,
             SaleCondition])
         # Alley, PoolQC, Fence, MiscFeature])
-
+        # return set([tf.feature_column.numeric_column(my_feature)
+        # for my_feature in feature_columns])
         return feature_columns
 
     def my_input_fn(features, targets, batch_size=1, shuffle=False, num_epochs=None):
@@ -178,43 +179,85 @@ class tf_basic_model:
         features, labels = ds.make_one_shot_iterator().get_next()
         return features, labels
 
-    def train_model(learning_rate, steps, batch_size, feature_columns, training_examples, training_targets, validation_examples, validation_targets):
-        periods = 100
+    def train_nn_regression_model(
+            learning_rate,
+            steps,
+            batch_size,
+            hidden_units,
+            training_examples,
+            training_targets,
+            validation_examples,
+            validation_targets):
+
+        periods = 10
         steps_per_period = steps / periods
 
         my_optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
         my_optimizer = tf.contrib.estimator.clip_gradients_by_norm(my_optimizer, 5.0)
-        linear_regressor = tf.estimator.LinearRegressor(feature_columns=feature_columns, optimizer=my_optimizer)
+        dnn_regressor = tf.estimator.DNNRegressor(
+            feature_columns=tf_basic_model.construct_feature_columns(training_examples),
+            hidden_units=hidden_units,
+            optimizer=my_optimizer,
+        )
 
-        def training_input_fn(): return tf_basic_model.my_input_fn(training_examples, training_targets['SalePrice'], batch_size=batch_size)
+        def training_input_fn(): return tf_basic_model.my_input_fn(training_examples,
+                                                                   training_targets["SalePrice"],
+                                                                   batch_size=batch_size)
 
-        def predict_training_input_fn(): return tf_basic_model.my_input_fn(training_examples, training_targets['SalePrice'], num_epochs=1, shuffle=False)
+        def predict_training_input_fn(): return tf_basic_model.my_input_fn(training_examples,
+                                                                           training_targets["SalePrice"],
+                                                                           num_epochs=1,
+                                                                           shuffle=False)
 
-        def predict_validation_input_fn(): return tf_basic_model.my_input_fn(validation_examples, validation_targets['SalePrice'], num_epochs=1, shuffle=False)
+        def predict_validation_input_fn(): return tf_basic_model.my_input_fn(validation_examples,
+                                                                             validation_targets["SalePrice"],
+                                                                             num_epochs=1,
+                                                                             shuffle=False)
 
-        print('Training model...')
-        print('RMSE (on training data): ')
+        print("Training model...")
+        print("RMSE (on training data):")
         training_rmse = []
         validation_rmse = []
-
         for period in range(0, periods):
-            linear_regressor.train(input_fn=training_input_fn, steps=steps_per_period)
-            training_predictions = linear_regressor.predict(input_fn=predict_training_input_fn)
+            dnn_regressor.train(
+                input_fn=training_input_fn,
+                steps=steps_per_period
+            )
+            # Take a break and compute predictions.
+            training_predictions = dnn_regressor.predict(input_fn=predict_training_input_fn)
             training_predictions = np.array([item['predictions'][0] for item in training_predictions])
 
-            validation_predictions = linear_regressor.predict(input_fn=predict_validation_input_fn)
+            validation_predictions = dnn_regressor.predict(input_fn=predict_validation_input_fn)
             validation_predictions = np.array([item['predictions'][0] for item in validation_predictions])
 
-            training_root_mean_squared_error = math.sqrt(metrics.mean_squared_error(training_predictions, training_targets))
-            validation_root_mean_squared_error = math.sqrt(metrics.mean_squared_error(validation_predictions, validation_targets))
-            print('period % 02d: % 0.2f' % (period, training_root_mean_squared_error))
+            # Compute training and validation loss.
+            training_root_mean_squared_error = math.sqrt(
+                metrics.mean_squared_error(training_predictions, training_targets))
+            validation_root_mean_squared_error = math.sqrt(
+                metrics.mean_squared_error(validation_predictions, validation_targets))
+            # Occasionally print the current loss.
+            print("  period %02d : %0.2f" % (period, training_root_mean_squared_error))
+            # Add the loss metrics from this period to our list.
             training_rmse.append(training_root_mean_squared_error)
             validation_rmse.append(validation_root_mean_squared_error)
-        print('Model training finished')
-        return linear_regressor
+        print("Model training finished.")
+
+        # Output a graph of loss metrics over periods.
+        plt.ylabel("RMSE")
+        plt.xlabel("Periods")
+        plt.title("Root Mean Squared Error vs. Periods")
+        plt.tight_layout()
+        plt.plot(training_rmse, label="training")
+        plt.plot(validation_rmse, label="validation")
+        plt.legend()
+
+        print("Final RMSE (on training data):   %0.2f" % training_root_mean_squared_error)
+        print("Final RMSE (on validation data): %0.2f" % validation_root_mean_squared_error)
+
+        return dnn_regressor
 
     def get_input_fn(data_set, num_epochs=None, shuffle=True):
-        return tf.estimator.inputs.pandas_input_fn(x=pd.DataFrame({k: data_set[k].values for k in data_set.columns}), y=None,num_epochs=num_epochs,shuffle=shuffle)
+        return tf.estimator.inputs.pandas_input_fn(x=pd.DataFrame({k: data_set[k].values for k in data_set.columns}), y=None, num_epochs=num_epochs, shuffle=shuffle)
 
     def submit_prediction(model, testing_examples, testing_targets):
         def predict_testing_input_fn(): return tf_basic_model.my_input_fn(testing_examples, testing_targets['SalePrice'], num_epochs=1, shuffle=False)
