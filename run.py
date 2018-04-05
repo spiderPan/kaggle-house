@@ -30,8 +30,8 @@ testing_examples = tf_basic_model.preprocess_features(testing_housing_data_frame
 testing_targets = tf_basic_model.preprocess_targets(testing_housing_data_frame)
 
 linear_regressor = tf_basic_model.train_model(learning_rate=0.01,
-                                              steps=800,
-                                              batch_size=300,
+                                              steps=300,
+                                              batch_size=500,
                                               feature_columns=tf_basic_model.construct_feature_columns(training_examples),
                                               training_examples=training_examples,
                                               training_targets=training_targets,

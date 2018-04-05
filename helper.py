@@ -15,6 +15,10 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 class tf_basic_model:
     def preprocess_features(housing_data_frame):
+        int_cols = housing_data_frame.select_dtypes(include=['int64','float64']).columns
+        obj_cols = housing_data_frame.select_dtypes(include=['object']).columns
+        housing_data_frame[int_cols] = housing_data_frame[int_cols].apply(lambda x: x.astype('float64'))
+        housing_data_frame[obj_cols] = housing_data_frame[obj_cols].apply(lambda x: x.astype('category').cat.codes)
         selected_features = housing_data_frame[
             [
                 'Id',
@@ -51,120 +55,8 @@ class tf_basic_model:
         return output_targets
 
     def construct_feature_columns(input_features):
-        LotFrontage = tf.feature_column.numeric_column('LotFrontage')
-        MasVnrArea = tf.feature_column.numeric_column('MasVnrArea')
-        GarageYrBlt = tf.feature_column.numeric_column('GarageYrBlt')
-        MSSubClass = tf.feature_column.numeric_column('MSSubClass')
+        return set([tf.feature_column.numeric_column(my_feature) for my_feature in input_features])
 
-        LotArea = tf.feature_column.numeric_column('LotArea')
-        OverallQual = tf.feature_column.numeric_column('OverallQual')
-        OverallCond = tf.feature_column.numeric_column('OverallCond')
-        YearBuilt = tf.feature_column.numeric_column('YearBuilt')
-
-        YearRemodAdd = tf.feature_column.numeric_column('YearRemodAdd')
-        BsmtFinSF1 = tf.feature_column.numeric_column('BsmtFinSF1')
-        BsmtFinSF2 = tf.feature_column.numeric_column('BsmtFinSF2')
-        BsmtUnfSF = tf.feature_column.numeric_column('BsmtUnfSF')
-        TotalBsmtSF = tf.feature_column.numeric_column('TotalBsmtSF')
-
-        firstFlrSF = tf.feature_column.numeric_column('1stFlrSF')
-        secondFlrSF = tf.feature_column.numeric_column('2ndFlrSF')
-        LowQualFinSF = tf.feature_column.numeric_column('LowQualFinSF')
-        GrLivArea = tf.feature_column.numeric_column('GrLivArea')
-        BsmtFullBath = tf.feature_column.numeric_column('BsmtFullBath')
-
-        BsmtHalfBath = tf.feature_column.numeric_column('BsmtHalfBath')
-        FullBath = tf.feature_column.numeric_column('FullBath')
-        HalfBath = tf.feature_column.numeric_column('HalfBath')
-        BedroomAbvGr = tf.feature_column.numeric_column('BedroomAbvGr')
-        KitchenAbvGr = tf.feature_column.numeric_column('KitchenAbvGr')
-
-        TotRmsAbvGrd = tf.feature_column.numeric_column('TotRmsAbvGrd')
-        Fireplaces = tf.feature_column.numeric_column('Fireplaces')
-        GarageCars = tf.feature_column.numeric_column('GarageCars')
-        GarageArea = tf.feature_column.numeric_column('GarageArea')
-        WoodDeckSF = tf.feature_column.numeric_column('WoodDeckSF')
-
-        OpenPorchSF = tf.feature_column.numeric_column('OpenPorchSF')
-        EnclosedPorch = tf.feature_column.numeric_column('EnclosedPorch')
-        SsnPorch = tf.feature_column.numeric_column('3SsnPorch')
-        ScreenPorch = tf.feature_column.numeric_column('ScreenPorch')
-        PoolArea = tf.feature_column.numeric_column('PoolArea')
-
-        MiscVal = tf.feature_column.numeric_column('MiscVal')
-        MoSold = tf.feature_column.numeric_column('MoSold')
-        YrSold = tf.feature_column.numeric_column('YrSold')
-
-        MSZoning = tf.feature_column.categorical_column_with_hash_bucket('MSZoning', hash_bucket_size=1000)
-        Street = tf.feature_column.categorical_column_with_hash_bucket('Street', hash_bucket_size=1000)
-        LotShape = tf.feature_column.categorical_column_with_hash_bucket('LotShape', hash_bucket_size=1000)
-        LandContour = tf.feature_column.categorical_column_with_hash_bucket('LandContour', hash_bucket_size=1000)
-        Utilities = tf.feature_column.categorical_column_with_hash_bucket('Utilities', hash_bucket_size=1000)
-
-        LotConfig = tf.feature_column.categorical_column_with_hash_bucket('LotConfig', hash_bucket_size=1000)
-        LandSlope = tf.feature_column.categorical_column_with_hash_bucket('LandSlope', hash_bucket_size=1000)
-        Neighborhood = tf.feature_column.categorical_column_with_hash_bucket('Neighborhood', hash_bucket_size=1000)
-        Condition1 = tf.feature_column.categorical_column_with_hash_bucket('Condition1', hash_bucket_size=1000)
-        Condition2 = tf.feature_column.categorical_column_with_hash_bucket('Condition2', hash_bucket_size=1000)
-
-        BldgType = tf.feature_column.categorical_column_with_hash_bucket('BldgType', hash_bucket_size=1000)
-        HouseStyle = tf.feature_column.categorical_column_with_hash_bucket('HouseStyle', hash_bucket_size=1000)
-        RoofStyle = tf.feature_column.categorical_column_with_hash_bucket('RoofStyle', hash_bucket_size=1000)
-        RoofMatl = tf.feature_column.categorical_column_with_hash_bucket('RoofMatl', hash_bucket_size=1000)
-        Exterior1st = tf.feature_column.categorical_column_with_hash_bucket('Exterior1st', hash_bucket_size=1000)
-
-        Exterior2nd = tf.feature_column.categorical_column_with_hash_bucket('Exterior2nd', hash_bucket_size=1000)
-        MasVnrType = tf.feature_column.categorical_column_with_hash_bucket('MasVnrType', hash_bucket_size=1000)
-        ExterQual = tf.feature_column.categorical_column_with_hash_bucket('ExterQual', hash_bucket_size=1000)
-        ExterCond = tf.feature_column.categorical_column_with_hash_bucket('ExterCond', hash_bucket_size=1000)
-        Foundation = tf.feature_column.categorical_column_with_hash_bucket('Foundation', hash_bucket_size=1000)
-
-        BsmtQual = tf.feature_column.categorical_column_with_hash_bucket('BsmtQual', hash_bucket_size=1000)
-        BsmtCond = tf.feature_column.categorical_column_with_hash_bucket('BsmtCond', hash_bucket_size=1000)
-        BsmtExposure = tf.feature_column.categorical_column_with_hash_bucket('BsmtExposure', hash_bucket_size=1000)
-        BsmtFinType1 = tf.feature_column.categorical_column_with_hash_bucket('BsmtFinType1', hash_bucket_size=1000)
-        BsmtFinType2 = tf.feature_column.categorical_column_with_hash_bucket('BsmtFinType2', hash_bucket_size=1000)
-
-        Heating = tf.feature_column.categorical_column_with_hash_bucket('Heating', hash_bucket_size=1000)
-        HeatingQC = tf.feature_column.categorical_column_with_hash_bucket('HeatingQC', hash_bucket_size=1000)
-        CentralAir = tf.feature_column.categorical_column_with_hash_bucket('CentralAir', hash_bucket_size=1000)
-        Electrical = tf.feature_column.categorical_column_with_hash_bucket('Electrical', hash_bucket_size=1000)
-        KitchenQual = tf.feature_column.categorical_column_with_hash_bucket('KitchenQual', hash_bucket_size=1000)
-
-        Functional = tf.feature_column.categorical_column_with_hash_bucket('Functional', hash_bucket_size=1000)
-        FireplaceQu = tf.feature_column.categorical_column_with_hash_bucket('FireplaceQu', hash_bucket_size=1000)
-        GarageType = tf.feature_column.categorical_column_with_hash_bucket('GarageType', hash_bucket_size=1000)
-        GarageFinish = tf.feature_column.categorical_column_with_hash_bucket('GarageFinish', hash_bucket_size=1000)
-        GarageQual = tf.feature_column.categorical_column_with_hash_bucket('GarageQual', hash_bucket_size=1000)
-
-        GarageCond = tf.feature_column.categorical_column_with_hash_bucket('GarageCond', hash_bucket_size=1000)
-        PavedDrive = tf.feature_column.categorical_column_with_hash_bucket('PavedDrive', hash_bucket_size=1000)
-        SaleType = tf.feature_column.categorical_column_with_hash_bucket('SaleType', hash_bucket_size=1000)
-        SaleCondition = tf.feature_column.categorical_column_with_hash_bucket('SaleCondition', hash_bucket_size=1000)
-        #Alley = tf.feature_column.categorical_column_with_hash_bucket('Alley', hash_bucket_size=1000)
-        #PoolQC = tf.feature_column.categorical_column_with_hash_bucket('PoolQC', hash_bucket_size=1000)
-        #Fence = tf.feature_column.categorical_column_with_hash_bucket('Fence', hash_bucket_size=1000)
-        #MiscFeature = tf.feature_column.categorical_column_with_hash_bucket('MiscFeature', hash_bucket_size=1000)
-
-        feature_columns = set([
-            MSSubClass, MSZoning, LotFrontage, LotArea, Street, LotShape, LandContour, Utilities, LotConfig,
-            LandSlope, Neighborhood, Condition1, Condition2, BldgType,
-            HouseStyle, OverallQual, OverallCond, YearBuilt, YearRemodAdd,
-            RoofStyle, RoofMatl, Exterior1st, Exterior2nd, MasVnrType,
-            MasVnrArea, ExterQual, ExterCond, Foundation, BsmtQual,
-            BsmtCond, BsmtExposure, BsmtFinType1, BsmtFinSF1,
-            BsmtFinType2, BsmtFinSF2, BsmtUnfSF, TotalBsmtSF, Heating,
-            HeatingQC, CentralAir, Electrical, firstFlrSF, secondFlrSF,
-            LowQualFinSF, GrLivArea, BsmtFullBath, BsmtHalfBath, FullBath,
-            HalfBath, BedroomAbvGr, KitchenAbvGr, KitchenQual,
-            TotRmsAbvGrd, Functional, Fireplaces, FireplaceQu, GarageType,
-            GarageYrBlt, GarageFinish, GarageCars, GarageArea, GarageQual,
-            GarageCond, PavedDrive, WoodDeckSF, OpenPorchSF,
-            EnclosedPorch, SsnPorch, ScreenPorch, PoolArea, MiscVal, MoSold, YrSold, SaleType,
-            SaleCondition])
-        # Alley, PoolQC, Fence, MiscFeature])
-
-        return feature_columns
 
     def my_input_fn(features, targets, batch_size=1, shuffle=False, num_epochs=None):
         features = {key: np.array(value) for key, value in dict(features).items()}
