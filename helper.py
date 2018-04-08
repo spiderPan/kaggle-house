@@ -62,7 +62,7 @@ class tf_basic_model:
             validation_examples,
             validation_targets):
 
-        periods = 100
+        periods = 20
         steps_per_period = steps / periods
 
         my_optimizer = tf.contrib.estimator.clip_gradients_by_norm(my_optimizer, 5.0)
