@@ -15,32 +15,15 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 class tf_basic_model:
     def preprocess_features(housing_data_frame):
-        int_cols = housing_data_frame.select_dtypes(include=['int64', 'float64']).columns
-        obj_cols = housing_data_frame.select_dtypes(include=['object']).columns
-        housing_data_frame[int_cols] = housing_data_frame[int_cols].apply(lambda x: x.astype('float64'))
-        housing_data_frame[obj_cols] = housing_data_frame[obj_cols].apply(lambda x: x.astype('category').cat.codes)
-        selected_features = housing_data_frame[
-            [
-                'Id',
-                'MSSubClass', 'MSZoning', 'LotFrontage', 'LotArea', 'Street', 'LotShape', 'LandContour', 'Utilities', 'LotConfig',
-                'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType',
-                'HouseStyle', 'OverallQual', 'OverallCond', 'YearBuilt', 'YearRemodAdd',
-                'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType',
-                'MasVnrArea', 'ExterQual', 'ExterCond', 'Foundation', 'BsmtQual',
-                'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinSF1',
-                'BsmtFinType2', 'BsmtFinSF2', 'BsmtUnfSF', 'TotalBsmtSF', 'Heating',
-                'HeatingQC', 'CentralAir', 'Electrical', '1stFlrSF', '2ndFlrSF',
-                'LowQualFinSF', 'GrLivArea', 'BsmtFullBath', 'BsmtHalfBath', 'FullBath',
-                'HalfBath', 'BedroomAbvGr', 'KitchenAbvGr', 'KitchenQual',
-                'TotRmsAbvGrd', 'Functional', 'Fireplaces', 'FireplaceQu', 'GarageType',
-                'GarageYrBlt', 'GarageFinish', 'GarageCars', 'GarageArea', 'GarageQual',
-                'GarageCond', 'PavedDrive', 'WoodDeckSF', 'OpenPorchSF',
-                'EnclosedPorch', '3SsnPorch', 'ScreenPorch', 'PoolArea', 'MiscVal', 'MoSold', 'YrSold', 'SaleType',
-                'SaleCondition',
-                # 'Alley', 'PoolQC', 'Fence', 'MiscFeature'
-            ]
-        ]
-        preprocess_features = selected_features.copy()
+        selected_features = housing_data_frame.copy()
+        not_features_indexes = pd.Index(['Alley', 'PoolQC', 'Fence', 'MiscFeature', 'SalePrice'])
+        preprocess_features_index = selected_features.columns.difference(not_features_indexes)
+        preprocess_features = selected_features[preprocess_features_index]
+
+        int_cols = preprocess_features.select_dtypes(include=['int64', 'float64']).columns.drop('Id')
+        obj_cols = preprocess_features.select_dtypes(include=['object']).columns
+        preprocess_features[int_cols] = preprocess_features[int_cols].apply(lambda x: x.astype('float64'))
+        preprocess_features[obj_cols] = preprocess_features[obj_cols].apply(lambda x: x.astype('category').cat.codes)
         preprocess_features = preprocess_features.apply(lambda x: x.fillna(x.value_counts().index[0]))
 
         return preprocess_features
@@ -79,7 +62,7 @@ class tf_basic_model:
             validation_examples,
             validation_targets):
 
-        periods = 10
+        periods = 100
         steps_per_period = steps / periods
 
         my_optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
