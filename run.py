@@ -31,6 +31,7 @@ testing_examples = tf_basic_model.preprocess_features(testing_housing_data_frame
 testing_targets = tf_basic_model.preprocess_targets(testing_housing_data_frame)
 
 
+<<<<<<< HEAD
 gradient_regressor, gradient_training_looses, gradient_validation_losses = tf_basic_model.train_nn_regression_model(
     my_optimizer=tf.train.GradientDescentOptimizer(learning_rate=0.0007),
     steps=2000,
@@ -64,6 +65,41 @@ adam_regressor, adam_training_losses, adam_validation_losses = tf_basic_model.tr
     steps=2000,
     batch_size=50,
     hidden_units=[10, 10, 8, 4, 2],
+=======
+# gradient_regressor, gradient_training_looses, gradient_validation_losses = tf_basic_model.train_nn_regression_model(
+#     my_optimizer=tf.train.GradientDescentOptimizer(learning_rate=0.0007),
+#     steps=500,
+#     batch_size=100,
+#     hidden_units=[10, 10, 8, 4, 2],
+#     training_examples=training_examples,
+#     training_targets=training_targets,
+#     validation_examples=validation_examples,
+#     validation_targets=validation_targets)
+# tf_basic_model.submit_prediction(model=gradient_regressor,
+#                                  testing_examples=testing_examples,
+#                                  testing_targets=testing_targets)
+#
+# adagrad_regressor, adagrad_training_losses, adagrad_validation_losses = tf_basic_model.train_nn_regression_model(
+#     my_optimizer=tf.train.AdagradOptimizer(learning_rate=0.5),
+#     steps=500,
+#     batch_size=100,
+#     hidden_units=[10, 10, 8, 4, 2],
+#     training_examples=training_examples,
+#     training_targets=training_targets,
+#     validation_examples=validation_examples,
+#     validation_targets=validation_targets)
+#
+# tf_basic_model.submit_prediction(model=adagrad_regressor,
+#                                  testing_examples=testing_examples,
+#                                  testing_targets=testing_targets,
+#                                  filename='adgrad_submission')
+
+adam_regressor, adam_training_losses, adam_validation_losses = tf_basic_model.train_nn_regression_model(
+    my_optimizer=tf.train.AdamOptimizer(learning_rate=0.009),
+    steps=10000,
+    batch_size=50,
+    hidden_units=[256, 32],
+>>>>>>> 62fc9c97fdd16203b0a95def39bacd9be14d8d1b
     training_examples=training_examples,
     training_targets=training_targets,
     validation_examples=validation_examples,

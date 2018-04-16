@@ -16,7 +16,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 class tf_basic_model:
     def preprocess_features(housing_data_frame):
         selected_features = housing_data_frame.copy()
-        not_features_indexes = pd.Index(['Alley', 'PoolQC', 'Fence', 'MiscFeature', 'SalePrice'])
+        not_features_indexes = pd.Index(['SalePrice'])
         preprocess_features_index = selected_features.columns.difference(not_features_indexes)
         preprocess_features = selected_features[preprocess_features_index]
 
