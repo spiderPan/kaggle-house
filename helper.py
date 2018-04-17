@@ -22,9 +22,9 @@ class tf_basic_model:
 
         int_cols = preprocess_features.select_dtypes(include=['int64', 'float64']).columns.drop('Id')
         obj_cols = preprocess_features.select_dtypes(include=['object']).columns
-        preprocess_features[int_cols] = preprocess_features[int_cols].apply(lambda x: x.astype('float64'))
-        preprocess_features[obj_cols] = preprocess_features[obj_cols].apply(lambda x: x.astype('category').cat.codes)
-        preprocess_features = preprocess_features.apply(lambda x: x.fillna(x.value_counts().index[0]))
+
+        preprocess_features[int_cols] = preprocess_features[int_cols].fillna(0)
+        preprocess_features[obj_cols] = preprocess_features[obj_cols].fillna('NONE')
 
         return preprocess_features
 
@@ -38,7 +38,18 @@ class tf_basic_model:
         return output_targets
 
     def construct_feature_columns(input_features):
-        return set([tf.feature_column.numeric_column(my_feature) for my_feature in input_features])
+        engineered_features = []
+        int_cols = input_features.select_dtypes(include=['int64', 'float64']).columns.drop('Id')
+        obj_cols = input_features.select_dtypes(include=['object']).columns
+
+        for continuous_feature in list(int_cols):
+            engineered_features.append(tf.contrib.layers.real_valued_column(continuous_feature))
+
+        for categorical_feature in list(obj_cols):
+            sparse_column = tf.contrib.layers.sparse_column_with_hash_bucket(categorical_feature, hash_bucket_size=1000)
+            engineered_features.append(tf.contrib.layers.embedding_column(sparse_id_column=sparse_column, dimension=16, combiner="sum"))
+
+        return engineered_features
 
     def my_input_fn(features, targets, batch_size=1, shuffle=False, num_epochs=None):
         features = {key: np.array(value) for key, value in dict(features).items()}
@@ -62,7 +73,7 @@ class tf_basic_model:
             validation_examples,
             validation_targets):
 
-        periods = 20
+        periods = 100
         steps_per_period = steps / periods
 
         my_optimizer = tf.contrib.estimator.clip_gradients_by_norm(my_optimizer, 5.0)
