@@ -44,3 +44,11 @@ ax.scatter(x=train['GrLivArea'], y=train['SalePrice'])
 plt.ylabel('SalePrice')
 plt.xlabel('GrLivArea')
 plt.show()
+
+train = train.drop(train[(train['GrLivArea'] > 4000) & (train['SalePrice'] < 300000)].index)
+
+fig, ax = plt.subplots()
+ax.scatter(x=train['GrLivArea'], y=train['SalePrice'])
+plt.ylabel('SalePrice')
+plt.xlabel('GrLivArea')
+plt.show()
