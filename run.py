@@ -8,6 +8,7 @@ import seaborn as sns
 from scipy import stats
 from scipy.stats import norm, skew
 from sklearn.preprocessing import Imputer
+from sklearn.preprocessing import LabelEncoder
 
 color = sns.color_palette()
 sns.set_style('darkgrid')
@@ -113,13 +114,56 @@ all_data = all_data.drop(drop_features, axis=1)
 all_data["Functional"] = all_data["Functional"].fillna("Typ")
 all_data['LotFrontage'] = all_data.groupby('Neighborhood')['LotFrontage'].transform(lambda x: x.fillna(x.median()))
 
-
 all_data_na = (all_data.isnull().sum() / len(all_data)) * 100
 all_data_na = all_data_na.drop(all_data_na[all_data_na == 0].index).sort_values(ascending=False)[:30]
 missing_data = pd.DataFrame({'Missing Ratio': all_data_na})
 print(missing_data)
+
 # Data correlation
 corrmat = train.corr()
 plt.subplots(figsize=(12, 9))
 sns.heatmap(corrmat, vmax=0.9, square=True)
 # plt.show()
+
+# Transforming Data Type
+
+num_to_str_features = ['MSSubClass', 'OverallCond', 'YrSold', 'MoSold']
+for feature in num_to_str_features:
+    all_data[feature] = all_data[feature].astype(str)
+
+# Encoding labels
+
+cols = ('FireplaceQu', 'BsmtQual', 'BsmtCond', 'GarageQual', 'GarageCond',
+        'ExterQual', 'ExterCond', 'HeatingQC', 'PoolQC', 'KitchenQual', 'BsmtFinType1',
+        'BsmtFinType2', 'Functional', 'Fence', 'BsmtExposure', 'GarageFinish', 'LandSlope',
+        'LotShape', 'PavedDrive', 'Street', 'Alley', 'CentralAir', 'MSSubClass', 'OverallCond',
+        'YrSold', 'MoSold')
+
+for c in cols:
+    lbl = LabelEncoder()
+    lbl.fit(list(all_data[c].values))
+    all_data[c] = lbl.transform(list(all_data[c].values))
+
+# adding one more feature
+all_data['TotalSF'] = all_data['TotalBsmtSF'] + all_data['1stFlrSF'] + all_data['2ndFlrSF']
+
+# skewed features
+numeric_feats = all_data.dtypes[all_data.dtypes != 'object'].index
+
+skewed_feats = all_data[numeric_feats].apply(lambda x: skew(x.dropna())).sort_values(ascending=False)
+skewness = pd.DataFrame({'Skew': skewed_feats})
+skewness = skewness[abs(skewness) > 0.75]
+print("There are {} skewed numerical features to Box Cox transform".format(skewness.shape[0]))
+
+from scipy.special import boxcox1p
+
+skewed_features = skewness.index
+lam = 0.15
+for feat in skewed_features:
+    # all_data[feat] += 1
+    all_data[feat] = boxcox1p(all_data[feat], lam)
+
+all_data = pd.get_dummies(all_data)
+
+train = all_data[:ntrain]
+test = all_data[ntrain:]
