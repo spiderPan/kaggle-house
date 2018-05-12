@@ -50,7 +50,7 @@ fig, ax = plt.subplots()
 ax.scatter(x=train['GrLivArea'], y=train['SalePrice'])
 plt.ylabel('SalePrice')
 plt.xlabel('GrLivArea')
-plt.show()
+#plt.show()
 
 sns.distplot(train['SalePrice'], fit=norm)
 (mu, sigma) = norm.fit(train['SalePrice'])
@@ -62,15 +62,32 @@ plt.title('SalePrice distribution')
 
 fig = plt.figure()
 res = stats.probplot(train['SalePrice'], plot=plt)
-plt.show()
+#plt.show()
 
 # Features Engineering
 train['SalePrice'] = np.log1p(train['SalePrice'])
 ntrain = train.shape[0]
 ntest = test.shape[0]
 y_train = train.SalePrice.values
-all_data = pd.concat((train, test).reset_index(drop=True))
+all_data = pd.concat((train, test)).reset_index(drop=True)
 all_data.drop(['SalePrice'], axis=1, inplace=True)
 print('all_data size is : {}'.format(all_data.shape))
 
-#Missing Data
+# Missing Data
+all_data_na = (all_data.isnull().sum() / len(all_data)) * 100
+all_data_na = all_data_na.drop(all_data_na[all_data_na == 0].index).sort_values(ascending=False)[:30]
+missing_data = pd.DataFrame({'Missing Ratio': all_data_na})
+missing_data.head(20)
+
+f, ax = plt.subplots(figsize=(15, 12))
+plt.xticks(rotation='90')
+sns.barplot(x=all_data_na.index, y=all_data_na)
+plt.xlabel('Features', fontsize=15)
+plt.ylabel('Percent of missing values', fontsize=15)
+plt.title('Percent missing data by feature', fontsize=15)
+
+# Data correlation
+corrmat = train.corr()
+plt.subplots(figsize=(12, 9))
+sns.heatmap(corrmat, vmax=0.9, square=True)
+#plt.show()
