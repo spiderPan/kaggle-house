@@ -266,4 +266,4 @@ ensemble = stacked_pred * 0.70 + xgb_pred * 0.15 + lgb_pred * 0.15
 sub = pd.DataFrame()
 sub['Id'] = test_ID
 sub['SalePrice'] = ensemble
-sub.to_csv('submission.csv', index=False)
+sub.to_csv('./data/submission.csv', index=False)
