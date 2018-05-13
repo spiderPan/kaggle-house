@@ -179,6 +179,7 @@ from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn.metrics import mean_squared_error
 import xgboost as xgb
 import lightgbm as lgb
+from averagingModels import AveragingModels
 
 n_folds = 5
 
@@ -223,4 +224,9 @@ score = rmsle_cv(model_xgb)
 print("Xgboost score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
 
 score = rmsle_cv(model_lgb)
-print("LGBM score: {:.4f} ({:.4f})\n" .format(score.mean(), score.std()))
+print("LGBM score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+
+averaged_models = AveragingModels(models=(ENet, GBoost, KRR, lasso))
+
+score = rmsle_cv(averaged_models)
+print(" Averaged base models score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
