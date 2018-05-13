@@ -180,6 +180,7 @@ from sklearn.metrics import mean_squared_error
 import xgboost as xgb
 import lightgbm as lgb
 from averagingModels import AveragingModels
+from stackingAverageModels import StackingAveragedModels
 
 n_folds = 5
 
@@ -230,3 +231,40 @@ averaged_models = AveragingModels(models=(ENet, GBoost, KRR, lasso))
 
 score = rmsle_cv(averaged_models)
 print(" Averaged base models score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+
+stacked_averaged_models = StackingAveragedModels(base_models=(ENet, GBoost, KRR),
+                                                 meta_model=lasso)
+
+score = rmsle_cv(stacked_averaged_models)
+print("Stacking Averaged models score: {:.4f} ({:.4f})".format(score.mean(), score.std()))
+
+
+def rmsle(y, y_pred):
+    return np.sqrt(mean_squared_error(y, y_pred))
+
+
+stacked_averaged_models.fit(train.values, y_train)
+stacked_train_pred = stacked_averaged_models.predict(train.values)
+stacked_pred = np.expm1(stacked_averaged_models.predict(test.values))
+print(rmsle(y_train, stacked_train_pred))
+
+model_xgb.fit(train, y_train)
+xgb_train_pred = model_xgb.predict(train)
+xgb_pred = np.expm1(model_xgb.predict(test))
+print(rmsle(y_train, xgb_train_pred))
+
+model_lgb.fit(train, y_train)
+lgb_train_pred = model_lgb.predict(train)
+lgb_pred = np.expm1(model_lgb.predict(test.values))
+print(rmsle(y_train, lgb_train_pred))
+
+print('RMSLE score on train data:')
+print(rmsle(y_train, stacked_train_pred * 0.70 +
+            xgb_train_pred * 0.15 + lgb_train_pred * 0.15))
+
+ensemble = stacked_pred * 0.70 + xgb_pred * 0.15 + lgb_pred * 0.15
+
+sub = pd.DataFrame()
+sub['Id'] = test_ID
+sub['SalePrice'] = ensemble
+sub.to_csv('submission.csv', index=False)
