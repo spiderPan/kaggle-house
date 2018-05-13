@@ -259,8 +259,7 @@ lgb_pred = np.expm1(model_lgb.predict(test.values))
 print(rmsle(y_train, lgb_train_pred))
 
 print('RMSLE score on train data:')
-print(rmsle(y_train, stacked_train_pred * 0.70 +
-            xgb_train_pred * 0.15 + lgb_train_pred * 0.15))
+print(rmsle(y_train, stacked_train_pred * 0.70 + xgb_train_pred * 0.15 + lgb_train_pred * 0.15))
 
 ensemble = stacked_pred * 0.70 + xgb_pred * 0.15 + lgb_pred * 0.15
 
